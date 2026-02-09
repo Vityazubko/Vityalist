@@ -29,6 +29,10 @@ const detailBody = document.getElementById("detail-body");
 const completionForm = document.getElementById("completion-form");
 const completionSubmit = document.getElementById("completion-submit");
 const closeDetailButton = document.getElementById("close-detail");
+const playerModal = document.getElementById("player-detail-modal");
+const playerTitle = document.getElementById("player-title");
+const playerBody = document.getElementById("player-body");
+const closePlayerButton = document.getElementById("close-player");
 
 const ADMIN_USERNAME = "Vityadmin";
 const ADMIN_PASSWORD = "Secrets";
@@ -170,6 +174,16 @@ const closeDetailModal = () => {
   selectedAction = null;
 };
 
+const openPlayerModal = () => {
+  playerModal.classList.add("active");
+  playerModal.setAttribute("aria-hidden", "false");
+};
+
+const closePlayerModal = () => {
+  playerModal.classList.remove("active");
+  playerModal.setAttribute("aria-hidden", "true");
+};
+
 const slotTemplates = new Map();
 document.querySelectorAll(".level-card[data-slot]").forEach((slot) => {
   slotTemplates.set(slot.dataset.slot, slot.innerHTML);
@@ -306,6 +320,7 @@ const renderLeaderboard = () => {
   rows.forEach((row, index) => {
     const item = document.createElement("div");
     item.className = "leaderboard-row";
+    item.dataset.player = row.username;
     item.innerHTML = `
       <span>#${index + 1}</span>
       <span>${row.username}</span>
@@ -313,6 +328,31 @@ const renderLeaderboard = () => {
     `;
     leaderboardList.append(item);
   });
+};
+
+const renderPlayerDetails = (username) => {
+  const approved = completions.filter(
+    (entry) => entry.username === username && entry.status === "approved"
+  );
+  const completed = approved.filter((entry) => entry.type === "complete");
+  const verified = approved.filter((entry) => entry.type === "verify");
+  const listItems = approved
+    .map((entry) => {
+      const level = submissions.find((item) => item.id === entry.levelId);
+      const name = level?.name || entry.levelId;
+      return `<span>${entry.type === "verify" ? "Верифікував" : "Пройшов"}: ${name}</span>`;
+    })
+    .join("");
+
+  playerTitle.textContent = `Гравець: ${username}`;
+  playerBody.innerHTML = `
+    <div class="detail-list">
+      <span>Пройдено рівнів: ${completed.length}</span>
+      <span>Верифіковано рівнів: ${verified.length}</span>
+      ${listItems || "<span>Ще немає підтверджених проходжень.</span>"}
+    </div>
+  `;
+  openPlayerModal();
 };
 
 const renderMessages = () => {
@@ -385,18 +425,42 @@ const renderCompletions = () => {
     const submission = submissions.find((item) => item.id === entry.levelId);
     const message = document.createElement("div");
     message.className = "message";
+    const slotSelect =
+      entry.type === "verify"
+        ? `
+          <label class="muted">
+            Місце у топі
+            <select data-slot>
+              ${Array.from({ length: 10 }, (_, i) => `<option value="${i + 1}">Top ${String(i + 1).padStart(2, "0")}</option>`).join("")}
+            </select>
+          </label>
+        `
+        : "";
     message.innerHTML = `
       <strong>${entry.username}</strong>
       <span>${entry.type === "verify" ? "Верифікація" : "Проходження"} — ${
         submission?.name || entry.levelId
       }</span>
       <span class="small">Відео: ${entry.video}</span>
+      ${slotSelect}
       <div class="admin-actions">
         <button class="ghost" type="button" data-action="reject">Відхилити</button>
         <button class="primary" type="button" data-action="approve">Прийняти</button>
       </div>
     `;
     message.querySelector("[data-action='approve']").addEventListener("click", () => {
+      if (entry.type === "verify" && submission) {
+        const select = message.querySelector("[data-slot]");
+        const slot = select?.value || "1";
+        submission.verified = true;
+        submission.approved = true;
+        submission.slot = slot;
+        submission.placement = slot;
+        submission.status = `Розміщено: Top ${String(slot).padStart(2, "0")}`;
+        saveSubmissions(submissions);
+        renderStoredLevels();
+        entry.rank = Number(slot);
+      }
       entry.status = "approved";
       saveCompletions(completions);
       renderCompletions();
@@ -507,8 +571,14 @@ const renderRequestDetails = (submission) => {
     if (index !== -1) {
       submissions.splice(index, 1);
       saveSubmissions(submissions);
+      const remaining = completions.filter((entry) => entry.levelId !== submission.id);
+      completions.length = 0;
+      completions.push(...remaining);
+      saveCompletions(completions);
       renderStoredLevels();
       renderMessages();
+      renderCompletions();
+      renderLeaderboard();
       requestDetails.innerHTML = `<p class="muted">Рівень видалено.</p>`;
     }
   });
@@ -680,18 +750,24 @@ const handleLevelClick = (event) => {
       completionForm.classList.remove("hidden");
     });
   }
-  if (deleteButton && isAdmin()) {
-    deleteButton.addEventListener("click", () => {
-      const index = submissions.findIndex((entry) => entry.id === submission.id);
-      if (index !== -1) {
-        submissions.splice(index, 1);
-        saveSubmissions(submissions);
-        renderStoredLevels();
-        renderMessages();
-        closeDetailModal();
-      }
-    });
-  }
+    if (deleteButton && isAdmin()) {
+      deleteButton.addEventListener("click", () => {
+        const index = submissions.findIndex((entry) => entry.id === submission.id);
+        if (index !== -1) {
+          submissions.splice(index, 1);
+          saveSubmissions(submissions);
+          const remaining = completions.filter((entry) => entry.levelId !== submission.id);
+          completions.length = 0;
+          completions.push(...remaining);
+          saveCompletions(completions);
+          renderStoredLevels();
+          renderMessages();
+          renderCompletions();
+          renderLeaderboard();
+          closeDetailModal();
+        }
+      });
+    }
   openDetailModal();
 };
 
@@ -702,6 +778,21 @@ closeDetailButton.addEventListener("click", closeDetailModal);
 detailModal.addEventListener("click", (event) => {
   if (event.target === detailModal) {
     closeDetailModal();
+  }
+});
+
+leaderboardList.addEventListener("click", (event) => {
+  const row = event.target.closest(".leaderboard-row");
+  if (!row || row.classList.contains("placeholder")) {
+    return;
+  }
+  renderPlayerDetails(row.dataset.player);
+});
+
+closePlayerButton.addEventListener("click", closePlayerModal);
+playerModal.addEventListener("click", (event) => {
+  if (event.target === playerModal) {
+    closePlayerModal();
   }
 });
 
