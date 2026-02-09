@@ -6,7 +6,6 @@ const openButtons = [
 ];
 const closeButton = document.getElementById("close-form");
 const openAuthButton = document.getElementById("open-auth");
-const openRegisterButton = document.getElementById("open-register");
 const closeAuthButton = document.getElementById("close-auth");
 const form = document.getElementById("level-form");
 const registerForm = document.getElementById("auth-register-form");
@@ -21,21 +20,12 @@ const levelsGrid = document.getElementById("levels-grid");
 const pendingGrid = document.getElementById("pending-grid");
 const messageList = document.getElementById("message-list");
 const requestDetails = document.getElementById("request-details");
-const completionList = document.getElementById("completion-list");
-const leaderboardList = document.getElementById("leaderboard-list");
-const detailModal = document.getElementById("level-detail-modal");
-const detailTitle = document.getElementById("detail-title");
-const detailBody = document.getElementById("detail-body");
-const completionForm = document.getElementById("completion-form");
-const completionSubmit = document.getElementById("completion-submit");
-const closeDetailButton = document.getElementById("close-detail");
 
 const ADMIN_USERNAME = "Vityadmin";
 const ADMIN_PASSWORD = "Secrets";
 const STORAGE_KEYS = {
   users: "vityalist_users",
   submissions: "vityalist_submissions",
-  completions: "vityalist_completions",
 };
 
 const loadUsers = () => {
@@ -63,32 +53,13 @@ const saveSubmissions = (submissions) => {
   localStorage.setItem(STORAGE_KEYS.submissions, JSON.stringify(submissions));
 };
 
-const loadCompletions = () =>
-  JSON.parse(localStorage.getItem(STORAGE_KEYS.completions) || "[]");
-
-const saveCompletions = (completions) => {
-  localStorage.setItem(STORAGE_KEYS.completions, JSON.stringify(completions));
-};
-
 const submissions = loadSubmissions();
 const users = loadUsers();
-const completions = loadCompletions();
 let pendingSubmission = null;
 let selectedSubmissionId = null;
 let currentUser = null;
-let selectedLevel = null;
-let selectedAction = null;
 
 const isAdmin = () => currentUser?.username === ADMIN_USERNAME;
-
-const setAuthMode = (mode) => {
-  authTabs.forEach((tab) => {
-    tab.classList.toggle("active", tab.dataset.authTab === mode);
-  });
-  registerForm.classList.toggle("hidden", mode !== "register");
-  loginForm.classList.toggle("hidden", mode !== "login");
-  authError.textContent = "";
-};
 
 const openModal = (modal) => {
   modal.classList.add("active");
@@ -112,14 +83,7 @@ openButtons.forEach((button) => {
   }
 });
 
-openAuthButton.addEventListener("click", () => {
-  setAuthMode("login");
-  openModal(authModal);
-});
-openRegisterButton.addEventListener("click", () => {
-  setAuthMode("register");
-  openModal(authModal);
-});
+openAuthButton.addEventListener("click", () => openModal(authModal));
 closeButton.addEventListener("click", () => closeModal(levelModal));
 closeAuthButton.addEventListener("click", () => closeModal(authModal));
 
@@ -156,20 +120,6 @@ const updateToastActions = () => {
   rejectButton.disabled = true;
 };
 
-const openDetailModal = () => {
-  detailModal.classList.add("active");
-  detailModal.setAttribute("aria-hidden", "false");
-};
-
-const closeDetailModal = () => {
-  detailModal.classList.remove("active");
-  detailModal.setAttribute("aria-hidden", "true");
-  completionForm.classList.add("hidden");
-  completionForm.reset();
-  selectedLevel = null;
-  selectedAction = null;
-};
-
 const slotTemplates = new Map();
 document.querySelectorAll(".level-card[data-slot]").forEach((slot) => {
   slotTemplates.set(slot.dataset.slot, slot.innerHTML);
@@ -185,27 +135,25 @@ const resetSlots = () => {
   });
 };
 
-const levelContent = (submission, rankLabel) => `
+const levelContent = (submission) => `
   <div class="level-header">
     <span>ID: ${submission.id}</span>
-    <span class="status">${rankLabel || "Додано"}</span>
+    <span class="status">Додано</span>
   </div>
   <h3>${submission.name}</h3>
   <p>${submission.description || "Складність: максимальна. Деталі додадуться пізніше."}</p>
   <div class="meta">
     <span>Музика: ${submission.music}</span>
     <span>Автор: ${submission.creator}</span>
-    <span>Верифікатор: ${submission.verified ? "Так" : "Ні"}</span>
-    <span>Тривалість: ${submission.duration}</span>
+    <span>Верифікатор: ${submission.verifier || "Немає"}</span>
   </div>
 `;
 
-const createLevelCard = (submission, rankLabel) => {
+const createLevelCard = (submission) => {
   const card = document.createElement("article");
   card.className = "level-card";
   card.dataset.dynamic = "true";
-  card.dataset.levelId = submission.id;
-  card.innerHTML = levelContent(submission, rankLabel);
+  card.innerHTML = levelContent(submission);
   return card;
 };
 
@@ -213,7 +161,6 @@ const createPendingCard = (submission) => {
   const card = document.createElement("article");
   card.className = "pending-card";
   card.dataset.dynamic = "true";
-  card.dataset.levelId = submission.id;
   card.innerHTML = `
     <div class="pending-header">
       <span>ID: ${submission.id}</span>
@@ -224,8 +171,7 @@ const createPendingCard = (submission) => {
     <div class="meta">
       <span>Музика: ${submission.music}</span>
       <span>Автор: ${submission.creator}</span>
-      <span>Верифікатор: ${submission.verified ? "Так" : "Ні"}</span>
-      <span>Тривалість: ${submission.duration}</span>
+      <span>Верифікатор: ${submission.verifier || "Немає"}</span>
     </div>
   `;
   return card;
@@ -254,65 +200,13 @@ const renderStoredLevels = () => {
         );
         if (slot) {
           slot.className = "level-card filled";
-          slot.innerHTML = levelContent(
-            submission,
-            `Top ${String(submission.placement).padStart(2, "0")}`
-          );
-          slot.dataset.levelId = submission.id;
+          slot.innerHTML = levelContent(submission);
           return;
         }
       }
 
       levelsGrid.prepend(createLevelCard(submission));
     });
-};
-
-const pointsForRank = (rank) => {
-  if (rank === 1) return 350;
-  if (rank === 2) return 330;
-  if (rank === 3) return 320;
-  if (rank === 4) return 310;
-  if (rank === 5) return 300;
-  return Math.max(0, 300 - (rank - 5) * 5);
-};
-
-const computeLeaderboard = () => {
-  const totals = {};
-  completions
-    .filter((entry) => entry.status === "approved")
-    .forEach((entry) => {
-      const base = pointsForRank(entry.rank);
-      const points = entry.type === "verify" ? base * 2 : base;
-      totals[entry.username] = (totals[entry.username] || 0) + points;
-    });
-  return Object.entries(totals)
-    .map(([username, points]) => ({ username, points }))
-    .sort((a, b) => b.points - a.points);
-};
-
-const renderLeaderboard = () => {
-  const rows = computeLeaderboard();
-  leaderboardList.innerHTML = "";
-  if (!rows.length) {
-    leaderboardList.innerHTML = `
-      <div class="leaderboard-row placeholder">
-        <span>#1</span>
-        <span>Очікуємо перших гравців</span>
-        <span>0 pts</span>
-      </div>
-    `;
-    return;
-  }
-  rows.forEach((row, index) => {
-    const item = document.createElement("div");
-    item.className = "leaderboard-row";
-    item.innerHTML = `
-      <span>#${index + 1}</span>
-      <span>${row.username}</span>
-      <span>${row.points} pts</span>
-    `;
-    leaderboardList.append(item);
-  });
 };
 
 const renderMessages = () => {
@@ -360,57 +254,6 @@ const renderMessages = () => {
   });
 };
 
-const renderCompletions = () => {
-  completionList.innerHTML = "";
-  if (!isAdmin()) {
-    completionList.innerHTML = `
-      <div class="message placeholder">
-        <strong>Доступ обмежено</strong>
-        <p>Запити на проходження доступні лише для Vityadmin.</p>
-      </div>
-    `;
-    return;
-  }
-  const pending = completions.filter((entry) => entry.status === "pending");
-  if (!pending.length) {
-    completionList.innerHTML = `
-      <div class="message placeholder">
-        <strong>Поки що порожньо</strong>
-        <p>Очікуємо відео-проходження або верифікації.</p>
-      </div>
-    `;
-    return;
-  }
-  pending.forEach((entry) => {
-    const submission = submissions.find((item) => item.id === entry.levelId);
-    const message = document.createElement("div");
-    message.className = "message";
-    message.innerHTML = `
-      <strong>${entry.username}</strong>
-      <span>${entry.type === "verify" ? "Верифікація" : "Проходження"} — ${
-        submission?.name || entry.levelId
-      }</span>
-      <span class="small">Відео: ${entry.video}</span>
-      <div class="admin-actions">
-        <button class="ghost" type="button" data-action="reject">Відхилити</button>
-        <button class="primary" type="button" data-action="approve">Прийняти</button>
-      </div>
-    `;
-    message.querySelector("[data-action='approve']").addEventListener("click", () => {
-      entry.status = "approved";
-      saveCompletions(completions);
-      renderCompletions();
-      renderLeaderboard();
-    });
-    message.querySelector("[data-action='reject']").addEventListener("click", () => {
-      entry.status = "rejected";
-      saveCompletions(completions);
-      renderCompletions();
-    });
-    completionList.append(message);
-  });
-};
-
 const updateSubmission = (submission, updates) => {
   Object.assign(submission, updates);
   saveSubmissions(submissions);
@@ -438,14 +281,7 @@ const renderRequestDetails = (submission) => {
       </label>
       <label>
         Верифікатор
-        <select name="verified">
-          <option value="no" ${submission.verified ? "" : "selected"}>Ні</option>
-          <option value="yes" ${submission.verified ? "selected" : ""}>Так</option>
-        </select>
-      </label>
-      <label>
-        Тривалість
-        <input type="text" name="duration" value="${submission.duration}" required />
+        <input type="text" name="verifier" value="${submission.verifier}" />
       </label>
       <label>
         Опис
@@ -461,17 +297,12 @@ const renderRequestDetails = (submission) => {
           <option value="4">Slot 04</option>
           <option value="5">Slot 05</option>
           <option value="6">Slot 06</option>
-          <option value="7">Slot 07</option>
-          <option value="8">Slot 08</option>
-          <option value="9">Slot 09</option>
-          <option value="10">Slot 10</option>
         </select>
       </label>
       <p class="muted">Без верифікатора рівень потрапить у Pending List.</p>
       <div class="admin-actions">
         <button class="ghost" type="button" data-action="reject">Відхилити</button>
         <button class="primary" type="submit">Підтвердити</button>
-        <button class="ghost" type="button" data-action="delete">Видалити рівень</button>
       </div>
     </form>
   `;
@@ -486,9 +317,8 @@ const renderRequestDetails = (submission) => {
       name: data.get("levelName").trim(),
       music: data.get("music").trim(),
       creator: data.get("creator").trim(),
-      verified: data.get("verified") === "yes",
+      verifier: data.get("verifier").trim(),
       description: data.get("description").trim(),
-      duration: data.get("duration").trim(),
       slot: data.get("slot"),
     };
     updateSubmission(submission, updates);
@@ -497,20 +327,8 @@ const renderRequestDetails = (submission) => {
 
   editForm.querySelector("[data-action='reject']").addEventListener("click", () => {
     submission.status = "Відхилено";
-    saveSubmissions(submissions);
     renderMessages();
     requestDetails.innerHTML = `<p class="muted">Запит відхилено.</p>`;
-  });
-
-  editForm.querySelector("[data-action='delete']").addEventListener("click", () => {
-    const index = submissions.findIndex((entry) => entry.id === submission.id);
-    if (index !== -1) {
-      submissions.splice(index, 1);
-      saveSubmissions(submissions);
-      renderStoredLevels();
-      renderMessages();
-      requestDetails.innerHTML = `<p class="muted">Рівень видалено.</p>`;
-    }
   });
 };
 
@@ -520,12 +338,21 @@ const approveSubmission = (submission) => {
   submission.status =
     submission.placement === "pending"
       ? "Pending"
-      : `Розміщено: Top ${String(submission.placement).padStart(2, "0")}`;
+      : `Розміщено: Slot ${submission.placement}`;
   saveSubmissions(submissions);
   renderStoredLevels();
   selectedSubmissionId = null;
   renderMessages();
   requestDetails.innerHTML = `<p class="muted">Рівень додано. Можеш обрати інший запит.</p>`;
+};
+
+const setAuthMode = (mode) => {
+  authTabs.forEach((tab) => {
+    tab.classList.toggle("active", tab.dataset.authTab === mode);
+  });
+  registerForm.classList.toggle("hidden", mode !== "register");
+  loginForm.classList.toggle("hidden", mode !== "login");
+  authError.textContent = "";
 };
 
 authTabs.forEach((tab) => {
@@ -583,11 +410,10 @@ form.addEventListener("submit", (event) => {
     name: data.get("levelName").trim(),
     music: data.get("music").trim(),
     creator: data.get("creator").trim(),
-    verified: data.get("verified") === "yes",
+    verifier: data.get("verifier").trim(),
     description: data.get("description").trim(),
-    duration: data.get("duration").trim(),
     status: "Новий",
-    slot: data.get("verified") === "yes" ? "1" : "pending",
+    slot: "pending",
     approved: false,
     placement: null,
   };
@@ -636,101 +462,7 @@ window.addEventListener("keydown", (event) => {
   }
 });
 
-const handleLevelClick = (event) => {
-  const card = event.target.closest(".level-card, .pending-card");
-  if (!card || !card.dataset.levelId) {
-    return;
-  }
-  const submission = submissions.find((entry) => entry.id === card.dataset.levelId);
-  if (!submission) {
-    return;
-  }
-  selectedLevel = submission;
-  const rank = Number(card.dataset.slot || submission.placement || 0);
-  const basePoints = pointsForRank(rank || 10);
-  detailTitle.textContent = submission.name;
-  detailBody.innerHTML = `
-    <p><strong>ID:</strong> ${submission.id}</p>
-    <p><strong>Автор:</strong> ${submission.creator}</p>
-    <p><strong>Музика:</strong> ${submission.music}</p>
-    <p><strong>Тривалість:</strong> ${submission.duration}</p>
-    <p><strong>Верифіковано:</strong> ${submission.verified ? "Так" : "Ні"}</p>
-    <p><strong>Очки за проходження:</strong> ${basePoints} pts</p>
-    <p><strong>Очки за верифікацію:</strong> ${basePoints * 2} pts</p>
-    <p><strong>Увага:</strong> Для складних рівнів потрібно відео з кліками.</p>
-    <div class="detail-actions">
-      ${
-        currentUser
-          ? `<button class="primary" id="action-button">${
-              submission.placement === "pending" ? "Верифікувати" : "Пройти"
-            }</button>`
-          : `<button class="ghost" id="action-button">Увійдіть, щоб подати відео</button>`
-      }
-      ${isAdmin() ? `<button class="ghost" id="delete-level">Видалити рівень</button>` : ""}
-    </div>
-  `;
-  completionForm.classList.add("hidden");
-  const actionButton = document.getElementById("action-button");
-  const deleteButton = document.getElementById("delete-level");
-  if (actionButton && currentUser) {
-    actionButton.addEventListener("click", () => {
-      selectedAction = submission.placement === "pending" ? "verify" : "complete";
-      completionSubmit.textContent =
-        selectedAction === "verify" ? "Надіслати відео верифікації" : "Надіслати відео проходження";
-      completionForm.classList.remove("hidden");
-    });
-  }
-  if (deleteButton && isAdmin()) {
-    deleteButton.addEventListener("click", () => {
-      const index = submissions.findIndex((entry) => entry.id === submission.id);
-      if (index !== -1) {
-        submissions.splice(index, 1);
-        saveSubmissions(submissions);
-        renderStoredLevels();
-        renderMessages();
-        closeDetailModal();
-      }
-    });
-  }
-  openDetailModal();
-};
-
-levelsGrid.addEventListener("click", handleLevelClick);
-pendingGrid.addEventListener("click", handleLevelClick);
-
-closeDetailButton.addEventListener("click", closeDetailModal);
-detailModal.addEventListener("click", (event) => {
-  if (event.target === detailModal) {
-    closeDetailModal();
-  }
-});
-
-completionForm.addEventListener("submit", (event) => {
-  event.preventDefault();
-  if (!selectedLevel || !selectedAction || !currentUser) {
-    return;
-  }
-  const data = new FormData(completionForm);
-  const rank = Number(selectedLevel.placement || 10);
-  completions.unshift({
-    id: `${selectedLevel.id}-${Date.now()}`,
-    levelId: selectedLevel.id,
-    username: currentUser.username,
-    video: data.get("video").trim(),
-    type: selectedAction === "verify" ? "verify" : "complete",
-    rank: rank || 1,
-    status: "pending",
-  });
-  saveCompletions(completions);
-  renderCompletions();
-  completionForm.reset();
-  closeDetailModal();
-  showToast("Відео надіслано Vityadmin для підтвердження.");
-});
-
 renderMessages();
 renderStoredLevels();
-renderCompletions();
-renderLeaderboard();
 updateToastActions();
 setAuthMode("register");

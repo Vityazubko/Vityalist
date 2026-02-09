@@ -17,10 +17,7 @@
         <a href="#about">Про проєкт</a>
         <a href="#contact">Контакти</a>
       </div>
-      <div class="auth-actions">
-        <button class="ghost" id="open-register">Реєстрація</button>
-        <button class="ghost" id="open-auth">Увійти</button>
-      </div>
+      <button class="ghost" id="open-auth">Увійти</button>
     </nav>
     <div class="hero-content">
       <div>
@@ -50,13 +47,13 @@
 
   <section id="levels" class="levels">
     <div class="section-head">
-      <h2>Топ найважчих рівнів</h2>
+      <h2>Вітрина найважчих рівнів</h2>
       <p>Тут будуть зібрані найскладніші виклики. Додай свої рівні у вільні слоти.</p>
     </div>
-    <div class="levels-list" id="levels-grid">
+    <div class="grid" id="levels-grid">
       <article class="level-card placeholder" data-slot="1">
         <div class="level-header">
-          <span>Top 01</span>
+          <span>Slot 01</span>
           <span class="status">Вільно</span>
         </div>
         <h3>Назва рівня</h3>
@@ -64,7 +61,7 @@
       </article>
       <article class="level-card placeholder" data-slot="2">
         <div class="level-header">
-          <span>Top 02</span>
+          <span>Slot 02</span>
           <span class="status">Вільно</span>
         </div>
         <h3>Назва рівня</h3>
@@ -72,7 +69,7 @@
       </article>
       <article class="level-card placeholder" data-slot="3">
         <div class="level-header">
-          <span>Top 03</span>
+          <span>Slot 03</span>
           <span class="status">Вільно</span>
         </div>
         <h3>Назва рівня</h3>
@@ -80,7 +77,7 @@
       </article>
       <article class="level-card placeholder" data-slot="4">
         <div class="level-header">
-          <span>Top 04</span>
+          <span>Slot 04</span>
           <span class="status">Вільно</span>
         </div>
         <h3>Назва рівня</h3>
@@ -88,7 +85,7 @@
       </article>
       <article class="level-card placeholder" data-slot="5">
         <div class="level-header">
-          <span>Top 05</span>
+          <span>Slot 05</span>
           <span class="status">Вільно</span>
         </div>
         <h3>Назва рівня</h3>
@@ -96,43 +93,11 @@
       </article>
       <article class="level-card placeholder" data-slot="6">
         <div class="level-header">
-          <span>Top 06</span>
+          <span>Slot 06</span>
           <span class="status">Вільно</span>
         </div>
         <h3>Назва рівня</h3>
         <p>Опис рівня: важкість, тривалість, музика, стиль.</p>
-      </article>
-      <article class="level-card placeholder" data-slot="7">
-        <div class="level-header">
-          <span>Top 07</span>
-          <span class="status">Вільно</span>
-        </div>
-        <h3>Назва рівня</h3>
-        <p>Слот для нових рекордів і найскладніших рівнів.</p>
-      </article>
-      <article class="level-card placeholder" data-slot="8">
-        <div class="level-header">
-          <span>Top 08</span>
-          <span class="status">Вільно</span>
-        </div>
-        <h3>Назва рівня</h3>
-        <p>Додай рівень, який заслуговує місця в топі.</p>
-      </article>
-      <article class="level-card placeholder" data-slot="9">
-        <div class="level-header">
-          <span>Top 09</span>
-          <span class="status">Вільно</span>
-        </div>
-        <h3>Назва рівня</h3>
-        <p>Місце для нової легенди складності.</p>
-      </article>
-      <article class="level-card placeholder" data-slot="10">
-        <div class="level-header">
-          <span>Top 10</span>
-          <span class="status">Вільно</span>
-        </div>
-        <h3>Назва рівня</h3>
-        <p>Останній слот топ-10 для твоєї найсильнішої роботи.</p>
       </article>
     </div>
   </section>
@@ -162,20 +127,6 @@
     </div>
   </section>
 
-  <section class="leaderboard" id="leaderboard">
-    <div class="section-head">
-      <h2>Лідерборд гравців</h2>
-      <p>Очки нараховуються за підтверджені проходження та верифікації.</p>
-    </div>
-    <div class="leaderboard-card" id="leaderboard-list">
-      <div class="leaderboard-row placeholder">
-        <span>#1</span>
-        <span>Очікуємо перших гравців</span>
-        <span>0 pts</span>
-      </div>
-    </div>
-  </section>
-
   <section id="admin" class="admin">
     <div class="section-head">
       <h2>Адмін-панель Vityadmin</h2>
@@ -195,15 +146,6 @@
         <h3>Активний запит</h3>
         <div class="request-details" id="request-details">
           <p class="muted">Вибери запит зі списку, щоб редагувати дані.</p>
-        </div>
-      </div>
-      <div class="admin-card">
-        <h3>Запити на проходження</h3>
-        <div class="messages" id="completion-list">
-          <div class="message placeholder">
-            <strong>Поки що порожньо</strong>
-            <p>Очікуємо відео-проходження або верифікації.</p>
-          </div>
         </div>
       </div>
     </div>
@@ -272,14 +214,7 @@
         </label>
         <label>
           Верифікатор
-          <select name="verified">
-            <option value="no" selected>Ні</option>
-            <option value="yes">Так</option>
-          </select>
-        </label>
-        <label>
-          Тривалість рівня
-          <input type="text" name="duration" placeholder="Наприклад, 1:45" required />
+          <input type="text" name="verifier" placeholder="Хто пройшов (якщо вже є)" />
         </label>
         <label>
           Опис
@@ -343,23 +278,6 @@
     <div class="toast-actions">
       <button class="ghost" id="reject-level">Відхилити</button>
       <button class="primary" id="approve-level">Прийняти</button>
-    </div>
-  </div>
-
-  <div class="modal" id="level-detail-modal" aria-hidden="true">
-    <div class="modal-card">
-      <div class="modal-header">
-        <h2 id="detail-title">Деталі рівня</h2>
-        <button class="icon-button" id="close-detail" aria-label="Закрити">✕</button>
-      </div>
-      <div class="detail-body" id="detail-body"></div>
-      <form id="completion-form" class="hidden">
-        <label>
-          Посилання на відео проходження
-          <input type="url" name="video" placeholder="https://..." required />
-        </label>
-        <button class="primary" type="submit" id="completion-submit">Надіслати відео</button>
-      </form>
     </div>
   </div>
 
