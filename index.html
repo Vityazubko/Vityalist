@@ -232,6 +232,292 @@
   <div class="modal" id="auth-modal" aria-hidden="true">
     <div class="modal-card">
       <div class="modal-header">
+        <h2>Акаунт Vityalist</h2>
+        <button class="icon-button" id="close-auth" aria-label="Закрити">✕</button>
+      </div>
+      <div class="auth-tabs">
+        <button class="ghost active" type="button" data-auth-tab="register">Реєстрація</button>
+        <button class="ghost" type="button" data-auth-tab="login">Вхід</button>
+      </div>
+      <form id="auth-register-form">
+        <label>
+          Нікнейм
+          <input type="text" name="username" placeholder="Ваш нікнейм" required />
+        </label>
+        <label>
+          Email
+          <input type="email" name="email" placeholder="name@example.com" required />
+        </label>
+        <label>
+          Пароль
+          <input type="password" name="password" placeholder="••••••••" required />
+        </label>
+        <button class="primary" type="submit">Створити акаунт</button>
+      </form>
+      <form id="auth-login-form" class="hidden">
+        <label>
+          Нікнейм
+          <input type="text" name="username" placeholder="Ваш нікнейм" required />
+        </label>
+        <label>
+          Пароль
+          <input type="password" name="password" placeholder="••••••••" required />
+        </label>
+        <button class="primary" type="submit">Увійти</button>
+      </form>
+      <p class="auth-error" id="auth-error"></p>
+      <p class="hint">Адмін акаунт: <strong>Vityadmin</strong>, пароль: <strong>Secrets</strong>.</p>
+    </div>
+  </div>
+
+  <div class="toast" id="admin-toast" aria-live="polite">
+    <div>
+      <strong>Новий запит!</strong>
+      <p id="admin-toast-text">Надійшов рівень на додавання. Прийняти?</p>
+    </div>
+    <div class="toast-actions">
+      <button class="ghost" id="reject-level">Відхилити</button>
+      <button class="primary" id="approve-level">Прийняти</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vityalist — найважчі рівні</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="glow"></div>
+  <header class="hero">
+    <nav class="nav">
+      <div class="logo">Vityalist</div>
+      <div class="nav-links">
+        <a href="#levels">Рівні</a>
+        <a href="#admin">Адмін</a>
+        <a href="#about">Про проєкт</a>
+        <a href="#contact">Контакти</a>
+      </div>
+      <button class="ghost" id="open-auth">Увійти</button>
+    </nav>
+    <div class="hero-content">
+      <div>
+        <p class="tag">найважчі рівні</p>
+        <h1>Vityalist — колекція найекстремальніших рівнів</h1>
+        <p class="subtitle">
+          Створи легендарну бібліотеку складності. Додай свої рівні та заповни
+          місця, які чекають на нові вершини.
+        </p>
+        <div class="cta">
+          <button class="primary" id="open-form">Додати рівень</button>
+          <button class="ghost">Переглянути всі</button>
+        </div>
+      </div>
+      <div class="hero-card">
+        <div class="card-top">
+          <span>Превʼю</span>
+          <span class="pill">Coming Soon</span>
+        </div>
+        <div class="card-body">
+          <div class="pulse"></div>
+          <p>Місце для твого наступного шедевру</p>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section id="levels" class="levels">
+    <div class="section-head">
+      <h2>Вітрина найважчих рівнів</h2>
+      <p>Тут будуть зібрані найскладніші виклики. Додай свої рівні у вільні слоти.</p>
+    </div>
+    <div class="grid" id="levels-grid">
+      <article class="level-card placeholder" data-slot="1">
+        <div class="level-header">
+          <span>Slot 01</span>
+          <span class="status">Вільно</span>
+        </div>
+        <h3>Назва рівня</h3>
+        <p>Місце для опису складності, стилю та ключових фішок рівня.</p>
+      </article>
+      <article class="level-card placeholder" data-slot="2">
+        <div class="level-header">
+          <span>Slot 02</span>
+          <span class="status">Вільно</span>
+        </div>
+        <h3>Назва рівня</h3>
+        <p>Короткий опис: механіки, атмосфера, режими та інші нотатки.</p>
+      </article>
+      <article class="level-card placeholder" data-slot="3">
+        <div class="level-header">
+          <span>Slot 03</span>
+          <span class="status">Вільно</span>
+        </div>
+        <h3>Назва рівня</h3>
+        <p>Тут можна додати свій рівень і зробити його частиною колекції.</p>
+      </article>
+      <article class="level-card placeholder" data-slot="4">
+        <div class="level-header">
+          <span>Slot 04</span>
+          <span class="status">Вільно</span>
+        </div>
+        <h3>Назва рівня</h3>
+        <p>Вкажи рівень складності, режим гри та дизайн-блоки.</p>
+      </article>
+      <article class="level-card placeholder" data-slot="5">
+        <div class="level-header">
+          <span>Slot 05</span>
+          <span class="status">Вільно</span>
+        </div>
+        <h3>Назва рівня</h3>
+        <p>Цей слот чекає на новий рекорд. Додай сюди власний рівень.</p>
+      </article>
+      <article class="level-card placeholder" data-slot="6">
+        <div class="level-header">
+          <span>Slot 06</span>
+          <span class="status">Вільно</span>
+        </div>
+        <h3>Назва рівня</h3>
+        <p>Опис рівня: важкість, тривалість, музика, стиль.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="pending">
+    <div class="section-head">
+      <h2>Pending List</h2>
+      <p>Рівні, які ще ніхто не пройшов або не були верифіковані.</p>
+    </div>
+    <div class="pending-grid" id="pending-grid">
+      <article class="pending-card placeholder">
+        <div class="pending-header">
+          <span>ID: ---</span>
+          <span class="status">Очікує</span>
+        </div>
+        <h3>Місце для нового рівня</h3>
+        <p>Додай рівень і він зʼявиться тут, якщо ще немає верифікатора.</p>
+      </article>
+      <article class="pending-card placeholder">
+        <div class="pending-header">
+          <span>ID: ---</span>
+          <span class="status">Очікує</span>
+        </div>
+        <h3>Місце для нового рівня</h3>
+        <p>Тут буде показано, хто створив рівень і яка музика використана.</p>
+      </article>
+    </div>
+  </section>
+
+  <section id="admin" class="admin">
+    <div class="section-head">
+      <h2>Адмін-панель Vityadmin</h2>
+      <p>Переглядай запити, редагуй дані та розміщуй рівні у потрібні слоти.</p>
+    </div>
+    <div class="admin-grid">
+      <div class="admin-card">
+        <h3>Повідомлення про запити</h3>
+        <div class="messages" id="message-list">
+          <div class="message placeholder">
+            <strong>Очікування запитів</strong>
+            <p>Коли хтось відправить рівень, він зʼявиться тут.</p>
+          </div>
+        </div>
+      </div>
+      <div class="admin-card">
+        <h3>Активний запит</h3>
+        <div class="request-details" id="request-details">
+          <p class="muted">Вибери запит зі списку, щоб редагувати дані.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="about" class="about">
+    <div class="about-card">
+      <h2>Про Vityalist</h2>
+      <p>
+        Vityalist — це простір для демонстрації найважчих рівнів з атмосфери
+        pointercreate. Тут можна відзначити найскладніші роботи та показати
+        колекцію фанатам викликів.
+      </p>
+      <div class="metrics">
+        <div>
+          <h3>∞</h3>
+          <span>місць для нових рівнів</span>
+        </div>
+        <div>
+          <h3>100%</h3>
+          <span>орієнтація на складність</span>
+        </div>
+        <div>
+          <h3>24/7</h3>
+          <span>оновлення колекції</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="contact" class="contact">
+    <div class="contact-card">
+      <h2>Готовий додати рівень?</h2>
+      <p>Залишай місця для нових рівнів або заповнюй їх, коли буде готово.</p>
+      <button class="primary" id="open-form-secondary">Звʼязатися</button>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <span>Vityalist © 2024</span>
+    <span>Designed for the hardest levels</span>
+  </footer>
+
+  <div class="modal" id="level-modal" aria-hidden="true">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>Додати свій рівень</h2>
+        <button class="icon-button" id="close-form" aria-label="Закрити">✕</button>
+      </div>
+      <form id="level-form">
+        <label>
+          ID рівня
+          <input type="text" name="levelId" placeholder="Наприклад, 918273" required />
+        </label>
+        <label>
+          Назва рівня
+          <input type="text" name="levelName" placeholder="Введи назву" required />
+        </label>
+        <label>
+          Музика
+          <input type="text" name="music" placeholder="Назва треку або лінк" required />
+        </label>
+        <label>
+          Автор
+          <input type="text" name="creator" placeholder="Хто створив рівень" required />
+        </label>
+        <label>
+          Верифікатор
+          <input type="text" name="verifier" placeholder="Хто пройшов (якщо вже є)" />
+        </label>
+        <label>
+          Опис
+          <textarea name="description" rows="3" placeholder="Коротко про стиль і складність"></textarea>
+        </label>
+        <label class="checkbox">
+          <input type="checkbox" name="needsAccount" checked />
+          Я створив акаунт і готовий чекати підтвердження від Vityadmin
+        </label>
+        <button class="primary" type="submit">Надіслати на розгляд</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal" id="auth-modal" aria-hidden="true">
+    <div class="modal-card">
+      <div class="modal-header">
         <h2>Створити акаунт</h2>
         <button class="icon-button" id="close-auth" aria-label="Закрити">✕</button>
       </div>
