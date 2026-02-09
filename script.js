@@ -73,6 +73,18 @@ const hideToast = () => {
   toast.classList.remove("show");
 };
 
+const updateToastActions = () => {
+  if (isAdmin()) {
+    toast.classList.remove("readonly");
+    approveButton.disabled = false;
+    rejectButton.disabled = false;
+    return;
+  }
+  toast.classList.add("readonly");
+  approveButton.disabled = true;
+  rejectButton.disabled = true;
+};
+
 const createLevelCard = (submission) => {
   const card = document.createElement("article");
   card.className = "level-card";
@@ -267,6 +279,7 @@ authForm.addEventListener("submit", (event) => {
   };
   openAuthButton.textContent = currentUser.username;
   renderMessages();
+  updateToastActions();
   closeModal(authModal);
 });
 
@@ -297,13 +310,14 @@ form.addEventListener("submit", (event) => {
   } else {
     showToast(`Запит "${pendingSubmission.name}" відправлено Vityadmin.`);
   }
+  updateToastActions();
 
   form.reset();
   closeModal(levelModal);
 });
 
 approveButton.addEventListener("click", () => {
-  if (!pendingSubmission) {
+  if (!pendingSubmission || !isAdmin()) {
     return;
   }
 
@@ -314,7 +328,7 @@ approveButton.addEventListener("click", () => {
 });
 
 rejectButton.addEventListener("click", () => {
-  if (!pendingSubmission) {
+  if (!pendingSubmission || !isAdmin()) {
     return;
   }
   pendingSubmission.status = "Відхилено";
@@ -331,3 +345,4 @@ window.addEventListener("keydown", (event) => {
 });
 
 renderMessages();
+updateToastActions();
