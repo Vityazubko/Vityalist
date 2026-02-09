@@ -6,7 +6,6 @@ const openButtons = [
 ];
 const closeButton = document.getElementById("close-form");
 const openAuthButton = document.getElementById("open-auth");
-const openRegisterButton = document.getElementById("open-register");
 const closeAuthButton = document.getElementById("close-auth");
 const form = document.getElementById("level-form");
 const registerForm = document.getElementById("auth-register-form");
@@ -62,15 +61,6 @@ let currentUser = null;
 
 const isAdmin = () => currentUser?.username === ADMIN_USERNAME;
 
-const setAuthMode = (mode) => {
-  authTabs.forEach((tab) => {
-    tab.classList.toggle("active", tab.dataset.authTab === mode);
-  });
-  registerForm.classList.toggle("hidden", mode !== "register");
-  loginForm.classList.toggle("hidden", mode !== "login");
-  authError.textContent = "";
-};
-
 const openModal = (modal) => {
   modal.classList.add("active");
   modal.setAttribute("aria-hidden", "false");
@@ -93,14 +83,7 @@ openButtons.forEach((button) => {
   }
 });
 
-openAuthButton.addEventListener("click", () => {
-  setAuthMode("login");
-  openModal(authModal);
-});
-openRegisterButton.addEventListener("click", () => {
-  setAuthMode("register");
-  openModal(authModal);
-});
+openAuthButton.addEventListener("click", () => openModal(authModal));
 closeButton.addEventListener("click", () => closeModal(levelModal));
 closeAuthButton.addEventListener("click", () => closeModal(authModal));
 
@@ -361,6 +344,15 @@ const approveSubmission = (submission) => {
   selectedSubmissionId = null;
   renderMessages();
   requestDetails.innerHTML = `<p class="muted">Рівень додано. Можеш обрати інший запит.</p>`;
+};
+
+const setAuthMode = (mode) => {
+  authTabs.forEach((tab) => {
+    tab.classList.toggle("active", tab.dataset.authTab === mode);
+  });
+  registerForm.classList.toggle("hidden", mode !== "register");
+  loginForm.classList.toggle("hidden", mode !== "login");
+  authError.textContent = "";
 };
 
 authTabs.forEach((tab) => {
