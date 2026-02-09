@@ -540,6 +540,10 @@ button:hover {
   flex-wrap: wrap;
 }
 
+.toast.readonly .toast-actions {
+  display: none;
+}
+
 @media (max-width: 720px) {
   .nav {
     flex-direction: column;
